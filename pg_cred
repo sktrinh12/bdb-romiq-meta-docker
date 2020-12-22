@@ -1,0 +1,6 @@
+{
+    "username":"BDB",
+    "password":"pass",
+    "db_name":"metadb",
+    "host_name":"localhost"
+}
