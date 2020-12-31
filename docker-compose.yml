@@ -1,24 +1,46 @@
 version: "3.7"
 services:
     postgres:
+        container_name: pg_container
         build:
-            context: ${PWD}
-
+            context: .
+            dockerfile: "${PWD}/services/postgres/Dockerfile"
+            args:
+                POSTGRES_USER: bdb
+                POSTGRES_DB: metadb 
+                POSTGRES_PASSWORD: pass
         volumes:
-            - $PWD/pg-data/:/var/lib/postgresql/data
-        
+            - ./services/postgres/pg-data/:/var/lib/postgresql/data
         ports:
-            - "5232:5232"
-        environment:
-            - POSTGRES_USER=BDB
-            - POSTGRES_DB=metadb
-            - POSTGRES_PASSWORD=pass
-        networks:
-            node_net:
-                ipv4_address: 172.28.1.4
-networks:
-    node_net:
-        ipam:
-            driver: default
-            config: 
-                - subnet: 172.28.0.0/16
+            - "5432:5432"
+        restart: always
+    romiq:
+        container_name: ro_container
+        build:
+            context: .
+            dockerfile: "${PWD}/services/romiq/Dockerfile"
+            args:
+                PASSWORD: pass
+                UNAME: bdb 
+                VERSION: "1_2_2"
+        volumes:
+            - ./common_drive/reports/:/mnt/common_drive/reports
+        depends_on:
+            - postgres
+    pyapi:
+        container_name: pa_container
+        build: 
+            context: .
+            dockerfile: ./services/pyapi/Dockerfile
+            args:
+                PASSWORD: pass
+                UNAME: bdb 
+        command: python manage.py run -h 0.0.0.0
+        volumes:
+            - ./services/pyapi:/usr/src/app
+        ports:
+            - 5000:5000
+        env_file:
+            - ./.env.dev
+volumes:
+    pg-data:
