@@ -9,3 +9,4 @@ load_csv.py
 Dockerfile2
 common_drive
 assign_cidr.sh
+id_rsa*
