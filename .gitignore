@@ -1,2 +1,11 @@
 __pycache__
 pg-data
+docker-compose*
+docker-compose.old
+pg-data/*
+app.py
+create_table_pg.py
+load_csv.py
+Dockerfile2
+common_drive
+assign_cidr.sh
