@@ -1,5 +1,5 @@
-docker-compose*.yml
-docker-compose.old
+docker-compose*
+Dockerfile
 run_svr.sh
 __pycache__
 *.csv
