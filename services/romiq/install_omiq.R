@@ -5,6 +5,3 @@ version <- substr(version, 2,length_str)
 filepath <- paste0(dirpath, "/R/omiq_v", version, "/OmiqPipeline")
 install.packages(filepath, repos=NULL, type="source")
 
-# library(reticulate)
-# py_install("pypdf2", pip=TRUE)
-# py_install("pandas", pip=TRUE)
