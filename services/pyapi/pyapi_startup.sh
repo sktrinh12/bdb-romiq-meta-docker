@@ -1,6 +1,6 @@
 #!/bin/bash
-service ssh start
-/usr/sbin/sshd -D
+# service ssh start
+# /usr/sbin/sshd -D
 echo "Waiting for postgres..."
 while ! nc -z postgres 5432; do
     sleep 0.1
