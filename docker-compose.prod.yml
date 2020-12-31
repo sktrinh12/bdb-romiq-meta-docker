@@ -1,0 +1,56 @@
+version: "3.7"
+services:
+    postgres:
+        container_name: pg_container
+        build:
+            context: .
+            dockerfile: "${PWD}/services/postgres/Dockerfile"
+            args:
+                POSTGRES_USER: bdb
+                POSTGRES_DB: metadb 
+                POSTGRES_PASSWORD: pass
+        volumes:
+            - ./services/postgres/pg-data/:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+        restart: always
+    romiq:
+        container_name: ro_container
+        build:
+            context: .
+            dockerfile: "${PWD}/services/romiq/Dockerfile"
+            args:
+                PASSWORD: pass
+                UNAME: bdb 
+                VERSION: "1_2_2"
+                DB_NAME: metadb 
+        volumes:
+            - ./common_drive/reports/:/mnt/common_drive/reports
+        depends_on:
+            - postgres
+    pyapi:
+        container_name: pa_container
+        build: 
+            context: .
+            dockerfile: ./services/pyapi/Dockerfile.prod
+            args:
+                PASSWORD: pass
+                UNAME: bdb 
+        command: gunicorn --bind 0.0.0.0:5000 manage:app
+        volumes:
+            - ./services/pyapi:/home/bdb/pyapi
+        expose:
+            - 5000
+        env_file:
+            - ./.env.prod
+        depends_on:
+            - postgres
+            - romiq
+    nginx:
+        build: ./services/nginx
+        ports:
+            - 1337:80
+        depends_on:
+            - pyapi
+volumes:
+    pg-data:
