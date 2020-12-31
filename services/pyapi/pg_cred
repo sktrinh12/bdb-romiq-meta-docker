@@ -1,0 +1,7 @@
+{
+    "username":"bdb",
+    "password":"pass",
+    "db_name":"metadb",
+    "host_name":"postgres",
+    "port":"5432"
+}
