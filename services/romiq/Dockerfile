@@ -15,6 +15,7 @@ RUN apt-get -y update \
     python3-pip \
     python-setuptools \
     python3-pypdf2 \
+    curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -45,7 +46,6 @@ USER root
 # install omiq
 # COPY services/romiq/install_omiq.R $APP_HOME/R/omiq_v${VERSION}/OmiqPipeline/install_omiq.R
 # COPY services/romiq/reticulate.sh $APP_HOME/R/
-COPY services/romiq/install_pypkgs.R $APP_HOME/R/
 RUN sed -i "s/py_install/#py_install/g" $APP_HOME/R/omiq_v${VERSION}/OmiqPipeline/install_omiq.R \
     && sed -i "s/library/#library/g" $APP_HOME/R/omiq_v${VERSION}/OmiqPipeline/install_omiq.R
 RUN Rscript $APP_HOME/R/omiq_v${VERSION}/OmiqPipeline/install_omiq.R
@@ -55,5 +55,7 @@ RUN chown -R $UNAME:$UNAME /usr/local/lib/R/site-library \
     && chown -R $UNAME:$UNAME /usr/local/lib/R/library \
     && chown -R $UNAME:$UNAME $APP_HOME/R
 
+# testing
+COPY services/romiq/test.R $APP_HOME/R/
 EXPOSE 22
 CMD service ssh start && while true; do sleep 500; done
