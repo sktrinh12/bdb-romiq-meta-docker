@@ -16,11 +16,13 @@ class GrabMetaData(Resource):
 
 class PostMetaData(Resource):
     def post(self):
+        re_run = None
         data = request.form['data']
         script_name = request.form['script_name']
-        re_run = request.form['re_run']
+        if 're_run' in request.form:
+            re_run = request.form['re_run']
         ts, dt = convert_pd_tuple(data)
-        print(ts)
+        print(f'timestamp: {ts}')
         rtn = insert_meta(dt)
         # print(data)
         output = run_script_ssh(script_name, ts, re_run)
