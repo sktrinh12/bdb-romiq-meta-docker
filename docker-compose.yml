@@ -1,10 +1,10 @@
 version: "3.7"
 services:
     postgres:
-        container_name: pg_container
+        container_name: postgres 
         build:
             context: .
-            dockerfile: "${PWD}/services/postgres/Dockerfile"
+            dockerfile: ./services/postgres/Dockerfile
             args:
                 POSTGRES_USER: bdb
                 POSTGRES_DB: metadb 
@@ -15,32 +15,54 @@ services:
             - "5432:5432"
         restart: always
     romiq:
-        container_name: ro_container
+        container_name: romiq 
         build:
             context: .
-            dockerfile: "${PWD}/services/romiq/Dockerfile"
+            dockerfile: ./services/romiq/Dockerfile
             args:
                 PASSWORD: pass
                 UNAME: bdb 
                 VERSION: "1_2_2"
         volumes:
-            - ./common_drive/reports/:/mnt/common_drive/reports
+            - ./common_drive:/mnt/common_drive
         depends_on:
             - postgres
     pyapi:
-        container_name: pa_container
+        container_name: pyapi 
         build: 
             context: .
             dockerfile: ./services/pyapi/Dockerfile
             args:
                 PASSWORD: pass
                 UNAME: bdb 
-        command: python manage.py run -h 0.0.0.0
+        command: gunicorn --bind 0.0.0.0:5000 manage:app
         volumes:
-            - ./services/pyapi:/usr/src/app
-        ports:
-            - 5000:5000
+            - ./services/pyapi:/home/bdb/pyapi
+        expose:
+            - 5000
         env_file:
             - ./.env.dev
+    shinyapp:
+        container_name: shinyapp
+        build: 
+            context: .
+            dockerfile: ./services/shinyapp/Dockerfile
+            args:
+                PASSWORD: pass
+                UNAME: bdb
+        restart: unless-stopped
+        expose:
+            - 3838
+        volumes:
+            - ./common_drive:/mnt/common_drive
+    nginx:
+        container_name: nginx
+        build: ./services/nginx
+        ports:
+            - 1337:80
+            - 1338:81
+        restart: unless-stopped
+        depends_on:
+            - pyapi
 volumes:
     pg-data:
