@@ -6,7 +6,9 @@ pg-data/*
 app.py
 create_table_pg.py
 load_csv.py
-Dockerfile*
+Dockerfile2
+Dockerfile.bk
 common_drive
 assign_cidr.sh
 id_rsa*
+shinyapp
