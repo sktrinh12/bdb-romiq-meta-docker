@@ -4,6 +4,7 @@ ARG UNAME
 ARG PASSWORD
 ENV UNAME "${UNAME}"
 ENV PASSWORD "${PASSWORD}"
+ENV TZ America/Los_Angeles
 # ENV WKDIR /usr/src/app
 
 # prevents pyc files
@@ -13,7 +14,7 @@ ENV PYTHONUNBUFFERED 1
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update \
-    && apt-get install -y openssh-server sudo netcat
+    && apt-get install -y openssh-server sudo netcat curl
 
 # RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1000 "${UNAME}"
 RUN useradd "${UNAME}" \
