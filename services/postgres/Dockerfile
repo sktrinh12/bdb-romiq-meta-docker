@@ -7,7 +7,7 @@ ENV POSTGRES_PASSWORD $POSTGRES_PASSWORD
 ENV POSTGRES_DB $POSTGRES_DB
 ENV DEBIAN_FRONTEND noninteractive
 
-# USER root
+USER root
 RUN apt-get update -y
 RUN apt-get install -y postgresql-server-dev-10 gcc musl-dev
 COPY ./services/postgres/create_table.sql /docker-entrypoint-initdb.d/
