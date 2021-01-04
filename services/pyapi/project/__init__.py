@@ -23,9 +23,11 @@ class PostMetaData(Resource):
             re_run = request.form['re_run']
         ts, dt = convert_pd_tuple(data)
         print(f'timestamp: {ts}')
+        print(f'length of datalist: {len(dt)}')
         rtn = insert_meta(dt)
         # print(data)
-        output = run_script_ssh(script_name, ts, re_run)
+        output = run_script_ssh(script_name, timestamp=ts, re_run=re_run)
+        # output = 'test'
         return {'input_postgres': rtn, 'output' : output}, 201
 
 api.add_resource(GrabMetaData, '/meta1/<string:timestamp>')
