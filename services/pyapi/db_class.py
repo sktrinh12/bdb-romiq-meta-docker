@@ -1,20 +1,18 @@
 import json
 import psycopg2
+import os
 
 class PostgresConn(object):
     """Postgres DB Connection"""
 
 
     def __init__(self):
-        credentials = None
-        with open('pg_cred') as f:
-            credentials = json.load(f)
 
-        self.username = credentials.get('username')
-        self.password = credentials.get('password')
-        self.hostname = credentials.get('host_name')
-        self.port = credentials.get('port')
-        self.dbname = credentials.get('db_name')
+        self.username = os.getenv('UNAME')
+        self.password = os.getenv('PASSWORD')
+        self.hostname = os.getenv('HOSTNAME')
+        self.port = os.getenv('PORT')
+        self.dbname = os.getenv('DBNAME')
         self.conn = None
 
     def __enter__(self):
