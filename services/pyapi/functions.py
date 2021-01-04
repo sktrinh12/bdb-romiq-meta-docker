@@ -14,25 +14,64 @@ def fetch_recent(cur):
     data[0] = format_datetime(data[0])
     return data
 
+def sort_columns(df):
+    """
+    sort the dataframe by the specified order
+    """
+    colm_order = ["Filenames",
+            "Well.ID",
+            "Plate.ID",
+            "Stain.Date",
+            "Plate.Row",
+            "Plate.Column",
+            "Control.Row",
+            "Target.Species",
+            "Specificity..CD.",
+            "Specificity..non.CD.",
+            "Isotype.Host.Species",
+            "Clone",
+            "Fluorochrome",
+            "Parameter",
+            "Batch.Number",
+            "ug.test",
+            "units",
+            "Sample.Types",
+            "Sample.Species",
+            "Sample.Strain",
+            "Donor.ID",
+            "spec1_range",
+            "spec2_range",
+            "spec3_range",
+            "gating_method",
+            "gating_argument"]
+    return df[colm_order]
+
+
 def convert_pd_tuple(json_data):
     """
     convert the inputted json data to a pandas dataframe then a list of tuples
     return a tuple with timestamp for that metadata set and the dataframe
     """
     df = pd.read_json(json_data)
-    df = df.where(pd.notnull(df), None)
+    df = sort_columns(df)
+    df = df.astype({'Batch.Number': str})
+    # df = df.where(pd.notnull(df), None)
+    print(df.dtypes)
+    # df.to_csv('/users/spencertrinh/Downloads/pandas.csv', index=False)
     ts = format_datetime(datetime.now())
     df.insert(0, column = 'timestamp', value=ts)
-    print(df.head())
+    # print(df.head())
+    print(df.columns)
+    print(len(df.columns))
     dt = [tuple(x) for x in df.to_numpy()]
     return ts, dt
 
 def insert_meta(data_list):
     """
-    post http request to insert entire meta dataframe into postgresql database
+    post http request to insert entire meta dataframe into postgresql database; 26 values
     """
     pg_sql = """INSERT INTO meta VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
-                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
     with PostgresConn() as conn:
         cur = conn.cursor()
         cur.executemany(pg_sql, data_list)
@@ -94,7 +133,7 @@ def run_script_ssh(script_name, **kwargs):
     timestamp = kwargs.get('timestamp', '')
     re_run = kwargs.get('re_run', '')
     if timestamp != '':
-        ssh_cmd += f" {timestamp}"
+        ssh_cmd += f" {timestamp.replace(' ', '_')}"
     if re_run != '':
         ssh_cmd += f" {re_run}"
     print(ssh_cmd)
