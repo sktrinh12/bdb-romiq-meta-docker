@@ -1,0 +1,6 @@
+Host ssh.dev.azure.com
+	IdentityFile ~/.ssh/azdevops
+	IdentitiesOnly yes
+
+Host *
+
