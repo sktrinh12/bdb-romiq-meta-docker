@@ -18,7 +18,7 @@ def sort_columns(df):
     """
     sort the dataframe by the specified order
     """
-    colm_order = ["Filenames",
+    colm_order = ["Filename",
             "Well.ID",
             "Plate.ID",
             "Stain.Date",
@@ -35,7 +35,7 @@ def sort_columns(df):
             "Batch.Number",
             "ug.test",
             "units",
-            "Sample.Types",
+            "Sample.Type",
             "Sample.Species",
             "Sample.Strain",
             "Donor.ID",
@@ -54,8 +54,6 @@ def convert_pd_tuple(json_data):
     """
     df = pd.read_json(json_data)
     df = sort_columns(df)
-    df = df.astype({'Batch.Number': str})
-    # df = df.where(pd.notnull(df), None)
     print(df.dtypes)
     # df.to_csv('/users/spencertrinh/Downloads/pandas.csv', index=False)
     ts = format_datetime(datetime.now())
@@ -129,7 +127,13 @@ def run_script_ssh(script_name, **kwargs):
     port = 22
     username = os.getenv("UNAME")
     password = os.getenv("PASSWORD")
-    ssh_cmd = f"Rscript /home/{username}/R/{script_name}.R"
+    version = os.getenv("VERSION")
+    if script_name == "main_driver":
+        rscript_path = os.path.join("/home", username, "R", f"omiq_v{version}",
+                                    "OmiqPipeline",f"{script_name}.R")
+    else:
+        rscript_path = os.path.join("/home", username, "R", f"{script_name}.R")
+    ssh_cmd = f"Rscript {rscript_path}"
     timestamp = kwargs.get('timestamp', '')
     re_run = kwargs.get('re_run', '')
     if timestamp != '':
