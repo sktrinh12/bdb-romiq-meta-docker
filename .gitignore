@@ -11,4 +11,5 @@ Dockerfile.bk
 common_drive
 assign_cidr.sh
 id_rsa*
-shinyapp
+shinyappid
+azdevops
