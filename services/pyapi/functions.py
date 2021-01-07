@@ -145,7 +145,10 @@ def run_script_ssh(script_name, **kwargs):
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(host, port, username, password)
     stdin, stdout, stderr = ssh.exec_command(ssh_cmd)
-    lines = ' '.join(stdout.readlines())
+    stdout_lines = ' '.join(stdout.readlines())
     ssh.close()
-    print(lines)
+    print(stdout_lines)
+    if stderr:
+        stderr_lines = ' '.join(stderr.readlines())
+        print(stderr_lines)
     return lines
