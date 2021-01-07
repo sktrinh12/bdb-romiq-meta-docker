@@ -58,9 +58,7 @@ def convert_pd_tuple(json_data):
     # df.to_csv('/users/spencertrinh/Downloads/pandas.csv', index=False)
     ts = format_datetime(datetime.now())
     df.insert(0, column = 'timestamp', value=ts)
-    # print(df.head())
-    print(df.columns)
-    print(len(df.columns))
+    print(f'number of columns: {len(df.columns)}')
     dt = [tuple(x) for x in df.to_numpy()]
     return ts, dt
 
@@ -138,9 +136,11 @@ def run_script_ssh(script_name, **kwargs):
     re_run = kwargs.get('re_run', '')
     if timestamp != '':
         ssh_cmd += f" {timestamp.replace(' ', '_')}"
-    if re_run != '':
+    if re_run not in ['', None]:
         ssh_cmd += f" {re_run}"
-    print(ssh_cmd)
+    print('='*40)
+    print('running command: \"{ssh_cmd}\"')
+    print('='*40)
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(host, port, username, password)
