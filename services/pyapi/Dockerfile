@@ -8,7 +8,7 @@ ARG PASSWORD
 ENV UNAME $UNAME
 ENV PASSWORD $PASSWORD
 ENV DBNAME $DBNAME
-ENV PORT $PORT 
+ENV PORT $PORT
 ENV HOSTNAME $HOSTNAME
 ENV TZ America/Los_Angeles
 # ENV WKDIR /usr/src/app
@@ -24,7 +24,7 @@ RUN apt-get update \
 
 # RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1000 "${UNAME}"
 RUN useradd "${UNAME}" \
-    && echo "${UNAME}:${PASSWORD}" | chpasswd 
+    && echo "${UNAME}:${PASSWORD}" | chpasswd
 
 # WORKDIR /usr/src/app
 ENV HOME=/home/"${UNAME}"
@@ -41,4 +41,4 @@ RUN pip install -r requirements.txt
 RUN chown -R ${UNAME}:${UNAME} $APP_HOME
 RUN chmod +x $APP_HOME/pyapi_startup.sh
 USER "${UNAME}"
-ENTRYPOINT ["/home/bdb/pyapi/pyapi_startup.sh"]
+ENTRYPOINT ["sh", "/home/bdb/pyapi/pyapi_startup.sh"]
