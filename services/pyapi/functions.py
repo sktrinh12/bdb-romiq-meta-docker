@@ -47,26 +47,26 @@ def sort_columns(df):
     return df[colm_order]
 
 
-def convert_pd_tuple(json_data):
+def convert_pd_tuple(json_data, barcode):
     """
     convert the inputted json data to a pandas dataframe then a list of tuples
-    return a tuple with timestamp for that metadata set and the dataframe
+    return a tuple with timestamp and barcode for that metadata set and the dataframe
     """
     df = pd.read_json(json_data)
     df = sort_columns(df)
     print(df.dtypes)
-    # df.to_csv('/users/spencertrinh/Downloads/pandas.csv', index=False)
     ts = format_datetime(datetime.now())
     df.insert(0, column = 'timestamp', value=ts)
+    df.insert(1, column = 'barcode', value=barcode)
     print(f'number of columns: {len(df.columns)}')
     dt = [tuple(x) for x in df.to_numpy()]
-    return ts, dt
+    return barcode, ts, dt
 
 def insert_meta(data_list):
     """
     post http request to insert entire meta dataframe into postgresql database; 26 values
     """
-    pg_sql = """INSERT INTO meta VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
+    pg_sql = """INSERT INTO meta VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
                 %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
     with PostgresConn() as conn:
         cur = conn.cursor()
@@ -76,16 +76,16 @@ def insert_meta(data_list):
     print('sucecssfullly uploaded data')
     return recent_data
 
-def get_meta(timestamp):
+def get_meta(barcode):
     """
-    get http request to grab current metadata based on timestamp
+    get http request to grab current metadata based on barcode 
     """
-    stmt = """SELECT * FROM META WHERE TS = %s"""
+    stmt = """SELECT * FROM META WHERE BARCODE = %s"""
     with PostgresConn() as conn:
         # cur = conn.cursor(cursor_factory=RealDictCursor)
         cur = conn.cursor()
         print('running sql stmt...')
-        cur.execute(stmt, (timestamp,))
+        cur.execute(stmt, (barcode,))
         res = format_for_json(cur.fetchall())
         meta = json.dumps(res, indent=2)
         cur.close()
@@ -132,10 +132,10 @@ def run_script_ssh(script_name, **kwargs):
     else:
         rscript_path = os.path.join("/home", username, "R", f"{script_name}.R")
     ssh_cmd = f"Rscript {rscript_path}"
-    timestamp = kwargs.get('timestamp', '')
+    timestamp = kwargs.get('barcode', '')
     re_run = kwargs.get('re_run', '')
-    if timestamp != '':
-        ssh_cmd += f" {timestamp.replace(' ', '_')}"
+    if barcode != '':
+        ssh_cmd += f" {barcode}"
     if re_run not in ['', None]:
         ssh_cmd += f" {re_run}"
     print('='*40)
