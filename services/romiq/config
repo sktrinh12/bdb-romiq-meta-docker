@@ -1,6 +1,5 @@
-Host ssh.dev.azure.com
+Host ssh.dev.azure.com LogLevel (QUIET|FATAL|ERROR|INFO|VERBOSE|DEBUG|DEBUG1|DEBUG2|DEBUG3)
 	IdentityFile /home/bdb/.ssh/azdevops
 	IdentitiesOnly yes
 
 Host *
-
