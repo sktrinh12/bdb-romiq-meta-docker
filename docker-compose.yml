@@ -1,40 +1,47 @@
 version: "3.7"
 services:
     postgres:
-        container_name: postgres 
+        container_name: postgres
         build:
             context: .
             dockerfile: ./services/postgres/Dockerfile
             args:
                 POSTGRES_USER: bdb
-                POSTGRES_DB: metadb 
+                POSTGRES_DB: metadb
                 POSTGRES_PASSWORD: pass
         expose:
             - 5432
         volumes:
             - ./services/postgres/pg-data/:/var/lib/postgresql/data
         restart: always
+        env_file:
+            - ./.env.dev
     romiq:
-        container_name: romiq 
+        container_name: romiq
         build:
             context: .
             dockerfile: ./services/romiq/Dockerfile
             args:
                 PASSWORD: pass
-                UNAME: bdb 
-                VERSION: "1_2_2"
+                UNAME: bdb
+                VERSION: "1_2_1b"
+                HOSTNAME: postgres
+                DBNAME: metadb
+                PORT: "5432"
         volumes:
-            - ./common_drive:/mnt/common_drive
+            - ./common_drive/reports:/mnt/common_drive/reports
         depends_on:
             - postgres
+        env_file:
+            - ./.env.dev
     pyapi:
-        container_name: pyapi 
-        build: 
+        container_name: pyapi
+        build:
             context: .
             dockerfile: ./services/pyapi/Dockerfile
             args:
                 PASSWORD: pass
-                UNAME: bdb 
+                UNAME: bdb
                 HOSTNAME: postgres
                 DBNAME: metadb
                 PORT: "5432"
@@ -47,7 +54,7 @@ services:
             - ./.env.dev
     shinyapp:
         container_name: shinyapp
-        build: 
+        build:
             context: .
             dockerfile: ./services/shinyapp/Dockerfile
             args:
