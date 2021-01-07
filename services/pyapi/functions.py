@@ -151,4 +151,4 @@ def run_script_ssh(script_name, **kwargs):
     if stderr:
         stderr_lines = ' '.join(stderr.readlines())
         print(stderr_lines)
-    return lines
+    return stdout_lines
