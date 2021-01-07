@@ -18,7 +18,7 @@ RUN useradd -m -d $APP_HOME "${UNAME}" \
 # set up git ssh
 USER $UNAME
 RUN mkdir -p $APP_HOME/.ssh/
-COPY services/shinyapp/shinyapp $APP_HOME/.ssh/id_rsa
+COPY services/shinyapp/shinyappid $APP_HOME/.ssh/id_rsa
 # RUN touch $APP_HOME/.ssh/known_hosts
 RUN ssh-keyscan github.com >> $APP_HOME/.ssh/known_hosts
 
