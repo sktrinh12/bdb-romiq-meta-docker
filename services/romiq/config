@@ -1,5 +1,5 @@
 Host ssh.dev.azure.com
-	IdentityFile ~/.ssh/azdevops
+	IdentityFile /home/bdb/.ssh/azdevops
 	IdentitiesOnly yes
 
 Host *
