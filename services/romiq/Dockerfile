@@ -31,7 +31,8 @@ RUN pip3 install paramiko psycopg2-binary numpy pandas
 
 RUN useradd -m -d $APP_HOME "${UNAME}" \
     && chown -R ${UNAME}:${UNAME} $APP_HOME \
-    && echo "${UNAME}:${PASSWORD}" | chpasswd
+    && echo "${UNAME}:${PASSWORD}" | chpasswd \
+    && git config --global core.sshcommand ssh -vv
 
 
 USER ${UNAME}
