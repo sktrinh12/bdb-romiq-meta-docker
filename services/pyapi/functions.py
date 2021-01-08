@@ -16,34 +16,35 @@ def fetch_recent(cur):
 
 def sort_columns(df):
     """
-    sort the dataframe by the specified order
+    sort the dataframe by the specified order, 25 entries
     """
-    colm_order = ["Filename",
-            "Well.ID",
-            "Plate.ID",
-            "Stain.Date",
-            "Plate.Row",
-            "Plate.Column",
-            "Control.Row",
-            "Target.Species",
-            "Specificity..CD.",
-            "Specificity..non.CD.",
-            "Isotype.Host.Species",
-            "Clone",
-            "Fluorochrome",
-            "Parameter",
-            "Batch.Number",
-            "ug.test",
-            "units",
-            "Sample.Type",
-            "Sample.Species",
-            "Sample.Strain",
-            "Donor.ID",
-            "spec1_range",
-            "spec2_range",
-            "spec3_range",
-            "gating_method",
-            "gating_argument"]
+    colm_order = [
+            "Filename",                   #1
+            "Well.ID",                    #2
+            "Plate.ID",                   #3
+            "Stain.Date",                 #4
+            "Plate.Row",                  #5
+            "Plate.Column",               #6
+            "Control.Row",                #7
+            "Target.Species",             #8
+            "Specificity..CD.",           #9
+            "Isotype.Host.Species",       #10
+            "Clone",                      #11
+            "Fluorochrome",               #12
+            "Parameter",                  #13
+            "Batch.Number",               #14
+            "ug.test",                    #15
+            "units",                      #16
+            "Sample.Type",                #17
+            "Sample.Species",             #18
+            "Sample.Strain",              #19
+            "Donor.ID",                   #20
+            "spec1_range",                #21
+            "spec2_range",                #22
+            "spec3_range",                #23
+            "gating_method",              #24
+            "gating_argument"             #25
+            ]
     return df[colm_order]
 
 
@@ -54,19 +55,22 @@ def convert_pd_tuple(json_data, barcode):
     """
     df = pd.read_json(json_data)
     df = sort_columns(df)
+    df['Batch.Number'].fillna("NA", inplace=True)
+    df['Batch.Number'] = df['Batch.Number'].astype(str)
     print(df.dtypes)
     ts = format_datetime(datetime.now())
     df.insert(0, column = 'timestamp', value=ts)
     df.insert(1, column = 'barcode', value=barcode)
     print(f'number of columns: {len(df.columns)}')
     dt = [tuple(x) for x in df.to_numpy()]
-    return barcode, ts, dt
+    print(df.head())
+    return ts, dt
 
 def insert_meta(data_list):
     """
-    post http request to insert entire meta dataframe into postgresql database; 26 values
+    post http request to insert entire meta dataframe into postgresql database; 27 values
     """
-    pg_sql = """INSERT INTO meta VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
+    pg_sql = """INSERT INTO meta VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
                 %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
     with PostgresConn() as conn:
         cur = conn.cursor()
@@ -126,20 +130,24 @@ def run_script_ssh(script_name, **kwargs):
     username = os.getenv("UNAME")
     password = os.getenv("PASSWORD")
     version = os.getenv("VERSION")
+    omiq_path = os.path.join("/home", username, "R") 
     if script_name == "main_driver":
-        rscript_path = os.path.join("/home", username, "R", f"omiq_v{version}",
+        rscript_path = os.path.join(omiq_path, f"omiq_v{version}",
                                     "OmiqPipeline",f"{script_name}.R")
     else:
-        rscript_path = os.path.join("/home", username, "R", f"{script_name}.R")
-    ssh_cmd = f"Rscript {rscript_path}"
-    timestamp = kwargs.get('barcode', '')
+        rscript_path = os.path.join(omiq_path, f"{script_name}.R")
+    omiq_path = os.path.join(omiq_path, f'omiq_v{version}', 'OmiqPipeline')
+    ssh_cmd = f"echo '{version}' > {omiq_path}/version.txt; echo '{username}' > {omiq_path}/uname.txt; Rscript {rscript_path}"
+    barcode = kwargs.get('barcode', '')
     re_run = kwargs.get('re_run', '')
-    if barcode != '':
+    if barcode:
         ssh_cmd += f" {barcode}"
+    else:
+        raise("need to supply barcode argument")
     if re_run not in ['', None]:
         ssh_cmd += f" {re_run}"
     print('='*40)
-    print('running command: \"{ssh_cmd}\"')
+    print(f'running command: \"{ssh_cmd}\"')
     print('='*40)
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
