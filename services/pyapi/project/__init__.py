@@ -22,7 +22,7 @@ class PostMetaData(Resource):
         barcode = request.form['barcode']
         if 're_run' in request.form:
             re_run = request.form['re_run']
-        barcode, ts, dt = convert_pd_tuple(data, barcode)
+        ts, dt = convert_pd_tuple(data, barcode)
         print(f'timestamp: {ts}')
         print(f'barcode: {barcode}')
         print(f'length of datalist: {len(dt)}')
