@@ -137,14 +137,9 @@ def run_script_ssh(script_name, **kwargs):
     else:
         rscript_path = os.path.join(omiq_path, f"{script_name}.R")
 
-    # write to file on romiq container (in home/bdb/R )
-    ssh_cmd = f"echo '{version}' > {omiq_path}/version.txt"
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(host, port, username, password)
-    stdin, stdout, stderr = ssh.exec_command(ssh_cmd)
-
-    omiq_path = os.path.join(omiq_path, f'omiq_v{version}', 'OmiqPipeline')
 
     # run rscript
     ssh_cmd = f"Rscript {rscript_path}"
