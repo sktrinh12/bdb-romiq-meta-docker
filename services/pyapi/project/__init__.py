@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_restful import Resource, Api
 from functions import *
+from concurrent.futures import ThreadPoolExecutor
 
+executor = ThreadPoolExecutor(2)
 app = Flask(__name__)
 api = Api(app)
 
@@ -28,8 +30,9 @@ class PostMetaData(Resource):
         print(f'length of datalist: {len(dt)}')
         rtn = insert_meta(dt)
         # print(data)
-        output = run_script_ssh(script_name, barcode=barcode, re_run=re_run)
+        executor.submit(run_script_ssh, script_name, barcode=barcode, re_run=re_run)
         # output = 'test'
+        output = f'{barcode} running in OmiqPipeline in background'
         return {'input_postgres': rtn, 'output' : output}, 201
 
 api.add_resource(GrabMetaData, '/meta1/<string:barcode>')
