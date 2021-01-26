@@ -1,69 +1,75 @@
 version: "3.7"
 services:
-    postgres:
-        container_name: postgres
-        build:
-            context: .
-            dockerfile: ./services/postgres/Dockerfile
-            args:
-                POSTGRES_USER: bdb
-                POSTGRES_DB: metadb
-                POSTGRES_PASSWORD: pass
-        expose:
-            - 5432
-        volumes:
-            - ./services/postgres/pg-data/:/var/lib/postgresql/data
-        restart: always
-        env_file:
-            - ./.env.dev
-    romiq:
-        container_name: romiq
-        image: bdbcontainerreg.azurecr.io/bdb-ctnr-romiq:cf1c
+    romiq1:
+        container_name: romiq1
+        # image: bdbcontainerreg.azurecr.io/bdb-ctnr-romiq:cf1d
+        image: bdbcontainerreg.azurecr.io/bdb-romiq-nopgdb:latest
         volumes:
             - ./common_drive/reports:/mnt/common_drive/reports
-        depends_on:
-            - postgres
         env_file:
             - ./.env.dev
-    pyapi:
-        container_name: pyapi
+    romiq2:
+        container_name: romiq2
+        image: bdbcontainerreg.azurecr.io/bdb-romiq-nopgdb:latest
+        volumes:
+            - ./common_drive/reports:/mnt/common_drive/reports
+        env_file:
+            - ./.env.dev
+    pyapi1:
+        container_name: pyapi1
         build:
             context: .
             dockerfile: ./services/pyapi/Dockerfile
             args:
                 PASSWORD: pass
                 UNAME: bdb
-                HOSTNAME: postgres
-                DBNAME: metadb
-                PORT: "5432"
+                HOSTNAME: romiq1
         command: gunicorn --bind 0.0.0.0:5000 manage:app
         volumes:
             - ./services/pyapi:/home/bdb/pyapi
-        ports:
-            - "5000:5000"
+        expose:
+            - 5000
         env_file:
             - ./.env.dev
-              #    shinyapp:
-              #        container_name: shinyapp
-              #        build:
-              #            context: .
-              #            dockerfile: ./services/shinyapp/Dockerfile
-              #            args:
-              #                PASSWORD: pass
-              #                UNAME: bdb
-              #        restart: unless-stopped
-              #        expose:
-              #            - 3838
-              #        volumes:
-              #            - ./common_drive:/mnt/common_drive
-              #    nginx:
-              #        container_name: nginx
-              #        build: ./services/nginx
-              #        ports:
-              #            - 1337:80
-              #            - 1338:81
-              #        restart: unless-stopped
-              #        depends_on:
-              #            - pyapi
+    pyapi2:
+        container_name: pyapi2
+        build:
+            context: .
+            dockerfile: ./services/pyapi/Dockerfile
+            args:
+                PASSWORD: pass
+                UNAME: bdb
+                HOSTNAME: romiq2
+        command: gunicorn --bind 0.0.0.0:5000 manage:app
+        volumes:
+            - ./services/pyapi:/home/bdb/pyapi
+        expose:
+            - 5000
+        env_file:
+            - ./.env.dev
+    shinyapp:
+        container_name: shinyapp
+        build:
+            context: .
+            dockerfile: ./services/shinyapp/Dockerfile
+            args:
+                PASSWORD: pass
+                UNAME: bdb
+                HOSTNAME: pyapi2
+        restart: unless-stopped
+        expose:
+            - 3838
+        volumes:
+            - ./common_drive:/mnt/common_drive
+    nginx:
+        container_name: nginx
+        build: ./services/nginx
+        links:
+            - pyapi1
+            - pyapi2
+        ports:
+            - 1888:80
+            - 1889:81
+        restart: unless-stopped
 volumes:
     pg-data:
