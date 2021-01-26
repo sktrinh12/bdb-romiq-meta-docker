@@ -1,4 +1,5 @@
-FROM sktrinh12/bdb-shinyapp:base_v1
+FROM sktrinh12/meta-shinybase:latest
+# FROM sktrinh12/bdb-shinyapp:base_v1
 
 ARG UNAME
 ARG PASSWORD
@@ -18,14 +19,14 @@ RUN useradd -m -d $APP_HOME "${UNAME}" \
 # set up git ssh
 USER $UNAME
 RUN mkdir -p $APP_HOME/.ssh/
-COPY services/shinyapp/shinyappid $APP_HOME/.ssh/id_rsa
-# RUN touch $APP_HOME/.ssh/known_hosts
-RUN ssh-keyscan github.com >> $APP_HOME/.ssh/known_hosts
+COPY services/romiq/azdevops $APP_HOME/.ssh/id_rsa
+RUN ssh-keyscan ssh.dev.azure.com >> $APP_HOME/.ssh/known_hosts
 
-# git clone shiny app
+# # git clone shiny app
 RUN mkdir $APP_HOME/app \
-    && git clone git@github.com:sktrinh12/shiny_meta_app.git $APP_HOME/app
+    && git clone -b no-pgdb --single-branch git@ssh.dev.azure.com:v3/SpencerTrinh/meta-shiny-app/meta-shiny-app $APP_HOME/app
 
+# COPY services/shinyapp/app $APP_HOME/app
 
 # change ownership to UNAME
 USER root
@@ -33,4 +34,4 @@ RUN chown -R $UNAME:$UNAME $APP_HOME
 
 EXPOSE 3838
 
-CMD ["R", "-e", "shiny::runApp('/home/bdb/app/meta_app', host= '0.0.0.0', port = 3838)"]
+CMD ["R", "-e", "shiny::runApp('/home/bdb/app', host= '0.0.0.0', port = 3838)"]
