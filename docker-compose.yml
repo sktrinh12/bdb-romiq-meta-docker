@@ -2,47 +2,30 @@ version: "3.7"
 services:
     romiq1:
         container_name: romiq1
-        # image: bdbcontainerreg.azurecr.io/bdb-ctnr-romiq:cf1d
-        image: bdbcontainerreg.azurecr.io/bdb-romiq-nopgdb:latest
-        volumes:
-            - ./common_drive/reports:/mnt/common_drive/reports
-        env_file:
-            - ./.env.dev
-    romiq2:
-        container_name: romiq2
-        image: bdbcontainerreg.azurecr.io/bdb-romiq-nopgdb:latest
-        volumes:
-            - ./common_drive/reports:/mnt/common_drive/reports
-        env_file:
-            - ./.env.dev
-    pyapi1:
-        container_name: pyapi1
         build:
             context: .
-            dockerfile: ./services/pyapi/Dockerfile
+            dockerfile: ./services/romiq/Dockerfile
             args:
                 PASSWORD: pass
                 UNAME: bdb
-                HOSTNAME: romiq1
-        command: gunicorn --bind 0.0.0.0:5000 manage:app
         volumes:
-            - ./services/pyapi:/home/bdb/pyapi
+            - ./services/romiq:/home/bdb/app
+            - ./common_drive/reports:/mnt/common_drive/reports
         expose:
             - 5000
         env_file:
             - ./.env.dev
-    pyapi2:
-        container_name: pyapi2
+    romiq2:
+        container_name: romiq2
         build:
             context: .
-            dockerfile: ./services/pyapi/Dockerfile
+            dockerfile: ./services/romiq/Dockerfile
             args:
                 PASSWORD: pass
                 UNAME: bdb
-                HOSTNAME: romiq2
-        command: gunicorn --bind 0.0.0.0:5000 manage:app
         volumes:
-            - ./services/pyapi:/home/bdb/pyapi
+            - ./services/romiq:/home/bdb/app
+            - ./common_drive/reports:/mnt/common_drive/reports
         expose:
             - 5000
         env_file:
@@ -55,7 +38,6 @@ services:
             args:
                 PASSWORD: pass
                 UNAME: bdb
-                HOSTNAME: pyapi2
         restart: unless-stopped
         expose:
             - 3838
@@ -65,11 +47,8 @@ services:
         container_name: nginx
         build: ./services/nginx
         links:
-            - pyapi1
-            - pyapi2
+            - romiq1
+            - romiq2
         ports:
             - 1888:80
-            - 1889:81
         restart: unless-stopped
-volumes:
-    pg-data:
