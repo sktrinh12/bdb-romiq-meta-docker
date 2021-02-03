@@ -1,7 +1,0 @@
-Flask
-flask-cli
-psycopg2-binary
-flask-restful
-pandas
-paramiko
-gunicorn

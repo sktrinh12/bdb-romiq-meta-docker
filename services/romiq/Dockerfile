@@ -1,4 +1,4 @@
-FROM bdbcontainerreg.azurecr.io/bdb-omiq:v2
+FROM sktrinh12/bdb-omiqpipeline:base_v2
 
 ARG UNAME
 ARG PASSWORD
@@ -8,6 +8,9 @@ ENV UNAME $UNAME
 ENV VERSION $VERSION
 
 ENV APP_HOME /home/${UNAME}
+ENV TZ America/Los_Angeles
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
 RUN apt-get -y update \
     && apt-get install -y --no-install-recommends \
@@ -17,25 +20,26 @@ RUN apt-get -y update \
     python3-pypdf2 \
     curl \
     vim \
+    sudo \
+    netcat \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install numpy pandas
+RUN python3 -m pip install --upgrade pip \
+    && mkdir -p $APP_HOME/app \
+    && mkdir -p $APP_HOME/R
 
-RUN useradd -m -d $APP_HOME "${UNAME}" \
-    && chown -R ${UNAME}:${UNAME} $APP_HOME \
-    && echo "${UNAME}:${PASSWORD}" | chpasswd
-
-# testing
-COPY services/romiq/OmiqPipeline $APP_HOME/R/omiq_v$VERSION/OmiqPipeline
+COPY services/romiq/app/ $APP_HOME/app
+RUN pip3 install -r $APP_HOME/app/requirements.txt
 
 # install omiq
 RUN Rscript $APP_HOME/R/omiq_v${VERSION}/OmiqPipeline/install_omiq.R
 
 # change ownership so UNAME can import libraries
-RUN chown -R $UNAME:$UNAME /usr/local/lib/R/site-library \
-    && chown -R $UNAME:$UNAME /usr/local/lib/R/library \
-    && chown -R $UNAME:$UNAME $APP_HOME/R
+# RUN chown -R $UNAME:$UNAME /usr/local/lib/R/site-library \
+#     && chown -R $UNAME:$UNAME /usr/local/lib/R/library \
+#     && chown -R $UNAME:$UNAME $APP_HOME/R
 
-EXPOSE 22
-CMD service ssh start && while true; do sleep 500; done
+EXPOSE 5000
+WORKDIR $APP_HOME/app/app
+CMD ["python3", "app.py"]

@@ -1,0 +1,6 @@
+fastapi
+click
+Jinja2
+pydantic
+starlette
+uvicorn
