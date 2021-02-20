@@ -22,3 +22,4 @@ cp*
 pyapi
 config
 old_
+run_svr.sh
