@@ -1,5 +1,6 @@
 import subprocess
 import os
+import re
 from datetime import datetime
 
 def validate_barcode(barcode):
@@ -12,6 +13,24 @@ def validate_barcode(barcode):
         return True
     except ValueError:
         return False
+
+def kill_Rscript():
+    """
+    kill subprocess (main_driver.R script)
+    """
+    pid = subprocess.Popen(["ps", "-C", "R"], stdout=subprocess.PIPE)
+    pid = subprocess.check_output(["awk", "{print $1}"], stdin=pid.stdout)
+    pid = pid.decode("utf8")
+    try:
+        pid = re.search("\d{1,3}", pid).group()
+        kill = subprocess.check_output(["kill", pid])
+        msg = f'process killed for: {pid}'
+        print(msg)
+        return {'output' : msg + ' ' + kill.decode('utf8')}
+    except Exception as e:
+        err_msg = f'Could not kill Rscript process - {e}'
+        print(err_msg)
+        return {'output': err_msg}
 
 
 def run_Rscript(script_name, **kwargs):
