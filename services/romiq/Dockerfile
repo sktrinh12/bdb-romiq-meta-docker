@@ -1,4 +1,4 @@
-FROM sktrinh12/bdb-omiqpipeline:base_v2
+FROM sktrinh12/bdb-omiqpipeline:base_v3
 
 ARG UNAME
 ARG PASSWORD
